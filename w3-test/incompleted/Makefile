@@ -1,6 +1,6 @@
 CFLAGS = -c -Wall
 CC = gcc
-LIBS =  -lm 
+LIBS =  -lm
 
 all: kplc
 
@@ -37,3 +37,8 @@ debug.o: debug.c
 clean:
 	rm -f *.o *~
 
+test: kplc
+	@for file in ../tests/*.kpl; do \
+		echo "Running test $$file..."; \
+		./kplc $$file > $$file.result.txt; \
+	done

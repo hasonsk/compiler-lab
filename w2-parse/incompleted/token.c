@@ -1,4 +1,4 @@
-/* 
+/*
  * @copyright (c) 2008, Hedspi, Hanoi University of Technology
  * @author Huu-Duc Nguyen
  * @version 1.0
@@ -45,7 +45,7 @@ int keywordEq(char *kw, char *string) {
 TokenType checkKeyword(char *string) {
   int i;
   for (i = 0; i < KEYWORDS_COUNT; i++)
-    if (keywordEq(keywords[i].string, string)) 
+    if (keywordEq(keywords[i].string, string))
       return keywords[i].tokenType;
   return TK_NONE;
 }
@@ -65,6 +65,7 @@ char *tokenToString(TokenType tokenType) {
   case TK_NUMBER: return "a number";
   case TK_CHAR: return "a constant char";
   case TK_EOF: return "end of file";
+  case TK_BYTES: return "bytes";
 
   case KW_PROGRAM: return "keyword PROGRAM";
   case KW_CONST: return "keyword CONST";
@@ -86,6 +87,9 @@ char *tokenToString(TokenType tokenType) {
   case KW_DO: return "keyword DO";
   case KW_FOR: return "keyword FOR";
   case KW_TO: return "keyword TO";
+  case KW_REPEAT: return "keyword REPEAT";
+  case KW_UNTIL: return "keyword UNTIL";
+
 
   case SB_SEMICOLON: return "\';\'";
   case SB_COLON: return "\':\'";
@@ -101,6 +105,7 @@ char *tokenToString(TokenType tokenType) {
   case SB_PLUS: return "\'+\'";
   case SB_MINUS: return "\'-\'";
   case SB_TIMES: return "\'*\'";
+  case SB_POWER: return "\'**\'";
   case SB_SLASH: return "\'/\'";
   case SB_LPAR: return "\'(\'";
   case SB_RPAR: return "\')\'";

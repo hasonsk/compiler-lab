@@ -1,4 +1,4 @@
-/* 
+/*
  * @copyright (c) 2008, Hedspi, Hanoi University of Technology
  * @author Huu-Duc Nguyen
  * @version 1.0
@@ -26,11 +26,22 @@ void scan(void) {
   free(tmp);
 }
 
+// void eat(TokenType tokenType) {
+//   if (lookAhead->tokenType == tokenType) {
+//     scan();
+//   } else missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
+// }
+
 void eat(TokenType tokenType) {
   if (lookAhead->tokenType == tokenType) {
-    scan();
-  } else missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
+    printf("Accepted token: %s\n", tokenToString(lookAhead->tokenType)); // Debug
+    scan(); // Chuyển sang token tiếp theo
+  } else {
+    printf("Expecting %s, found %s\n", tokenToString(tokenType), tokenToString(lookAhead->tokenType));
+    missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
+  }
 }
+
 
 void compileProgram(void) {
   // TODO: create, enter, and exit program block
@@ -54,7 +65,7 @@ void compileBlock(void) {
     } while (lookAhead->tokenType == TK_IDENT);
 
     compileBlock2();
-  } 
+  }
   else compileBlock2();
 }
 
@@ -71,7 +82,7 @@ void compileBlock2(void) {
     } while (lookAhead->tokenType == TK_IDENT);
 
     compileBlock3();
-  } 
+  }
   else compileBlock3();
 }
 
@@ -88,7 +99,7 @@ void compileBlock3(void) {
     } while (lookAhead->tokenType == TK_IDENT);
 
     compileBlock4();
-  } 
+  }
   else compileBlock4();
 }
 
@@ -199,11 +210,11 @@ Type* compileType(void) {
   Type* type;
 
   switch (lookAhead->tokenType) {
-  case KW_INTEGER: 
+  case KW_INTEGER:
     eat(KW_INTEGER);
     break;
-  case KW_CHAR: 
-    eat(KW_CHAR); 
+  case KW_CHAR:
+    eat(KW_CHAR);
     break;
   case KW_ARRAY:
     eat(KW_ARRAY);
@@ -228,11 +239,11 @@ Type* compileBasicType(void) {
   Type* type;
 
   switch (lookAhead->tokenType) {
-  case KW_INTEGER: 
-    eat(KW_INTEGER); 
+  case KW_INTEGER:
+    eat(KW_INTEGER);
     break;
-  case KW_CHAR: 
-    eat(KW_CHAR); 
+  case KW_CHAR:
+    eat(KW_CHAR);
     break;
   default:
     error(ERR_INVALID_BASICTYPE, lookAhead->lineNo, lookAhead->colNo);
@@ -301,6 +312,9 @@ void compileStatement(void) {
   case KW_FOR:
     compileForSt();
     break;
+  case KW_REPEAT:  // New case for REPEAT UNTIL
+      compileRepeatSt();
+      break;
     // EmptySt needs to check FOLLOW tokens
   case SB_SEMICOLON:
   case KW_END:
@@ -341,7 +355,7 @@ void compileIfSt(void) {
   compileCondition();
   eat(KW_THEN);
   compileStatement();
-  if (lookAhead->tokenType == KW_ELSE) 
+  if (lookAhead->tokenType == KW_ELSE)
     compileElseSt();
 }
 
@@ -385,7 +399,7 @@ void compileArguments(void) {
 
     eat(SB_RPAR);
     break;
-    // Check FOLLOW set 
+    // Check FOLLOW set
   case SB_TIMES:
   case SB_SLASH:
   case SB_PLUS:
@@ -589,4 +603,16 @@ int compile(char *fileName) {
   closeInputStream();
   return IO_SUCCESS;
 
+}
+
+void compileRepeatSt(void) {
+  eat(KW_REPEAT);           // Nhận diện từ khóa REPEAT
+  compileStatement();       // Xử lý câu lệnh trong REPEAT
+
+  eat(SB_SEMICOLON);        // Kiểm tra dấu chấm phẩy sau câu lệnh REPEAT
+
+  eat(KW_UNTIL);            // Nhận diện từ khóa UNTIL
+  compileCondition();       // Xử lý điều kiện trong UNTIL
+
+  eat(SB_SEMICOLON);        // Kiểm tra dấu chấm phẩy sau câu lệnh UNTIL
 }

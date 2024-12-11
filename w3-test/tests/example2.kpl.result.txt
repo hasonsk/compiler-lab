@@ -1,0 +1,18 @@
+Accepted token: keyword PROGRAM
+Accepted token: an identification
+Accepted token: ';'
+Accepted token: keyword VAR
+Accepted token: an identification
+Accepted token: ':'
+Accepted token: keyword INTEGER
+Accepted token: ';'
+Accepted token: keyword FUNCTION
+Accepted token: an identification
+Accepted token: '('
+Accepted token: an identification
+Accepted token: ':'
+Accepted token: keyword INTEGER
+Accepted token: ')'
+Accepted token: ':'
+Expecting ';', found keyword INTEGER
+5-27:Missing ';'

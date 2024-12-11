@@ -44,7 +44,7 @@ void skipComment() {
     }
     readChar();
   }
-  if (state != 2) 
+  if (state != 2)
     error(ERR_END_OF_COMMENT, lineNo, colNo);
 }
 
@@ -55,7 +55,7 @@ Token* readIdentKeyword(void) {
   token->string[0] = toupper((char)currentChar);
   readChar();
 
-  while ((currentChar != EOF) && 
+  while ((currentChar != EOF) &&
 	 ((charCodes[currentChar] == CHAR_LETTER) || (charCodes[currentChar] == CHAR_DIGIT))) {
     if (count <= MAX_IDENT_LEN) token->string[count++] = toupper((char)currentChar);
     readChar();
@@ -67,7 +67,14 @@ Token* readIdentKeyword(void) {
   }
 
   token->string[count] = '\0';
-  token->tokenType = checkKeyword(token->string);
+  // Check for new keywords REPEAT and UNTIL
+  if (strcmp(token->string, "REPEAT") == 0)
+    token->tokenType = KW_REPEAT;
+  else if (strcmp(token->string, "UNTIL") == 0)
+    token->tokenType = KW_UNTIL;
+  else
+    token->tokenType = checkKeyword(token->string);
+  // token->tokenType = checkKeyword(token->string);
 
   if (token->tokenType == TK_NONE)
     token->tokenType = TK_IDENT;
@@ -84,6 +91,14 @@ Token* readNumber(void) {
     readChar();
   }
 
+  if (currentChar == 'B' || currentChar == 'b') {
+    token->string[count++] = (char)currentChar;
+    token->string[count] = '\0';
+    token->tokenType = TK_BYTES;
+    readChar();
+    return token;
+  }
+
   token->string[count] = '\0';
   token->value = atoi(token->string);
   return token;
@@ -98,7 +113,7 @@ Token* readConstChar(void) {
     error(ERR_INVALID_CONSTANT_CHAR, token->lineNo, token->colNo);
     return token;
   }
-    
+
   token->string[0] = currentChar;
   token->string[1] = '\0';
 
@@ -123,28 +138,37 @@ Token* getToken(void) {
   Token *token;
   int ln, cn;
 
-  if (currentChar == EOF) 
+  if (currentChar == EOF)
     return makeToken(TK_EOF, lineNo, colNo);
 
   switch (charCodes[currentChar]) {
   case CHAR_SPACE: skipBlank(); return getToken();
   case CHAR_LETTER: return readIdentKeyword();
   case CHAR_DIGIT: return readNumber();
-  case CHAR_PLUS: 
+  case CHAR_PLUS:
     token = makeToken(SB_PLUS, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   case CHAR_MINUS:
     token = makeToken(SB_MINUS, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
+  // case CHAR_TIMES:
+  //   token = makeToken(SB_TIMES, lineNo, colNo);
+  //   readChar();
+  //   return token;
+
   case CHAR_TIMES:
-    token = makeToken(SB_TIMES, lineNo, colNo);
-    readChar(); 
-    return token;
+      readChar();
+      if (currentChar == '*') {
+        readChar();
+        return makeToken(SB_POWER, lineNo, colNo);  // New token type for **
+      } else {
+        return makeToken(SB_TIMES, lineNo, cn);
+      }
   case CHAR_SLASH:
     token = makeToken(SB_SLASH, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   case CHAR_LT:
     ln = lineNo;
@@ -162,9 +186,9 @@ Token* getToken(void) {
       readChar();
       return makeToken(SB_GE, ln, cn);
     } else return makeToken(SB_GT, ln, cn);
-  case CHAR_EQ: 
+  case CHAR_EQ:
     token = makeToken(SB_EQ, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   case CHAR_EXCLAIMATION:
     ln = lineNo;
@@ -180,7 +204,7 @@ Token* getToken(void) {
     }
   case CHAR_COMMA:
     token = makeToken(SB_COMMA, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   case CHAR_PERIOD:
     ln = lineNo;
@@ -192,7 +216,7 @@ Token* getToken(void) {
     } else return makeToken(SB_PERIOD, ln, cn);
   case CHAR_SEMICOLON:
     token = makeToken(SB_SEMICOLON, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   case CHAR_COLON:
     ln = lineNo;
@@ -208,7 +232,7 @@ Token* getToken(void) {
     cn = colNo;
     readChar();
 
-    if (currentChar == EOF) 
+    if (currentChar == EOF)
       return makeToken(SB_LPAR, ln, cn);
 
     switch (charCodes[currentChar]) {
@@ -224,12 +248,12 @@ Token* getToken(void) {
     }
   case CHAR_RPAR:
     token = makeToken(SB_RPAR, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   default:
     token = makeToken(TK_NONE, lineNo, colNo);
     error(ERR_INVALID_SYMBOL, lineNo, colNo);
-    readChar(); 
+    readChar();
     return token;
   }
 }
@@ -299,4 +323,3 @@ void printToken(Token *token) {
   case SB_RSEL: printf("SB_RSEL\n"); break;
   }
 }
-
