@@ -1,4 +1,4 @@
-/* 
+/*
  * @copyright (c) 2008, Hedspi, Hanoi University of Technology
  * @author Huu-Duc Nguyen
  * @version 1.0
@@ -37,7 +37,10 @@ typedef enum {
   ERR_UNDECLARED_PROCEDURE,
   ERR_DUPLICATE_IDENT,
   ERR_TYPE_INCONSISTENCY,
-  ERR_PARAMETERS_ARGUMENTS_INCONSISTENCY
+  ERR_PARAMETERS_ARGUMENTS_INCONSISTENCY,
+  ERR_TOO_MANY_EXPRESSIONS,
+  ERR_TOO_FEW_EXPRESSIONS,
+  ERR_CONSTANT_ASSIGN
 } ErrorCode;
 
 void error(ErrorCode err, int lineNo, int colNo);

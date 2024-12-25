@@ -124,6 +124,9 @@ Object *checkDeclaredLValueIdent(char *name)
   case OBJ_VARIABLE:
   case OBJ_PARAMETER:
     break;
+  case OBJ_CONSTANT:
+    error(ERR_CONSTANT_ASSIGN, currentToken->lineNo, currentToken->colNo);
+    break;
   case OBJ_FUNCTION:
     if (obj != symtab->currentScope->owner)
       error(ERR_INVALID_IDENT, currentToken->lineNo, currentToken->colNo);

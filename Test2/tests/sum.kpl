@@ -1,0 +1,15 @@
+PROGRAM TestSwap;
+CONST x = 10;
+VAR  a:INTEGER;
+     b:INTEGER;
+     c:INTEGER;
+     result:INTEGER;
+
+BEGIN
+  a := 5;
+  b := 8;
+  c := 12;
+
+  result := sum a+b , x+x-c, sum x/b, x+c;
+  CALL WRITEI(result);
+END.

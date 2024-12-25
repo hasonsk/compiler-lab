@@ -1,4 +1,4 @@
-/* 
+/*
  * @copyright (c) 2008, Hedspi, Hanoi University of Technology
  * @author Huu-Duc Nguyen
  * @version 1.0
@@ -31,7 +31,8 @@ struct {
   {"WHILE", KW_WHILE},
   {"DO", KW_DO},
   {"FOR", KW_FOR},
-  {"TO", KW_TO}
+  {"TO", KW_TO},
+  {"SUM", KW_SUM}
 };
 
 int keywordEq(char *kw, char *string) {
@@ -45,7 +46,7 @@ int keywordEq(char *kw, char *string) {
 TokenType checkKeyword(char *string) {
   int i;
   for (i = 0; i < KEYWORDS_COUNT; i++)
-    if (keywordEq(keywords[i].string, string)) 
+    if (keywordEq(keywords[i].string, string))
       return keywords[i].tokenType;
   return TK_NONE;
 }
@@ -86,6 +87,7 @@ char *tokenToString(TokenType tokenType) {
   case KW_DO: return "keyword DO";
   case KW_FOR: return "keyword FOR";
   case KW_TO: return "keyword TO";
+  case KW_SUM: return "keyword SUM";
 
   case SB_SEMICOLON: return "\';\'";
   case SB_COLON: return "\':\'";

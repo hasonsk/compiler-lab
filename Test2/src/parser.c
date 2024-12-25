@@ -455,42 +455,70 @@ void compileStatement(void)
 
 Type *compileLValue(void)
 {
-  // TODO: parse a lvalue (a variable, an array element, a parameter, the current function identifier)
   Object *var;
   Type *varType;
 
   eat(TK_IDENT);
 
-  // check if the identifier is a function identifier, or a variable identifier, or a parameter
   var = checkDeclaredLValueIdent(currentToken->string);
 
-  if (var->kind == OBJ_VARIABLE)
+  if (var->kind == OBJ_CONSTANT)
+    error(ERR_CONSTANT_ASSIGN, currentToken->lineNo, currentToken->colNo);
+
+  if (var->kind == OBJ_VARIABLE) {
     if (var->varAttrs->type->typeClass == TP_ARRAY)
       varType = compileIndexes(var->varAttrs->type);
     else
       varType = var->varAttrs->type;
-  else if (var->kind == OBJ_PARAMETER)
+  } else if (var->kind == OBJ_PARAMETER) {
     varType = var->paramAttrs->type;
-  else if (var->kind == OBJ_FUNCTION)
+  } else if (var->kind == OBJ_FUNCTION) {
     varType = var->funcAttrs->returnType;
-  else
+  } else {
     error(ERR_INVALID_LVALUE, currentToken->lineNo, currentToken->colNo);
+  }
 
   return varType;
 }
 
+
+void compileLValueList(Type *lvalueTypes[], int *lvalueCount)
+{
+  Type *type;
+
+  type = compileLValue();
+  lvalueTypes[(*lvalueCount)++] = type;
+
+  while (lookAhead->tokenType == SB_COMMA) {
+    eat(SB_COMMA);
+    type = compileLValue();
+    lvalueTypes[(*lvalueCount)++] = type;
+  }
+}
+
+#define MAX_VARIABLES 100
 void compileAssignSt(void)
 {
-  // TODO: parse the assignment and check type consistency
-  Type *leftType;
-  Type *expType;
+  Type *lvalueTypes[MAX_VARIABLES];
+  Type *expressionTypes[MAX_VARIABLES];
+  int lvalueCount = 0, expressionCount = 0;
 
-  leftType = compileLValue();
+  compileLValueList(lvalueTypes, &lvalueCount);
+
   eat(SB_ASSIGN);
-  expType = compileExpression();
 
-  checkTypeEquality(leftType, expType);
+  compileExpressionList(expressionTypes, &expressionCount);
+
+  if (lvalueCount < expressionCount)
+    error(ERR_TOO_MANY_EXPRESSIONS, currentToken->lineNo, currentToken->colNo);
+  if (lvalueCount > expressionCount)
+    error(ERR_TOO_FEW_EXPRESSIONS, currentToken->lineNo, currentToken->colNo);
+
+  for (int i = 0; i < lvalueCount; i++) {
+    checkTypeEquality(lvalueTypes[i], expressionTypes[i]);
+  }
 }
+
 
 void compileCallSt(void)
 {
@@ -663,12 +691,36 @@ void compileCondition(void)
   checkTypeEquality(type1, type2);
 }
 
+#define MAX_EXPRESSION_COUNT 100
 Type *compileExpression(void)
 {
   Type *type;
 
   switch (lookAhead->tokenType)
   {
+  case KW_SUM:
+    eat(KW_SUM);
+    Type *sumTypes[MAX_EXPRESSION_COUNT];
+    int sumCount = 0;
+
+    do {
+      type = compileExpression();
+      checkIntType(type);
+      sumTypes[sumCount++] = type;
+
+      if (lookAhead->tokenType == SB_COMMA) {
+        eat(SB_COMMA);
+      }
+    } while (lookAhead->tokenType != SB_SEMICOLON && sumCount < MAX_EXPRESSION_COUNT);
+
+    for (int i = 0; i < sumCount; i++) {
+      if (sumTypes[i]->typeClass != TP_INT) {
+        error(ERR_INVALID_TYPE, currentToken->lineNo, currentToken->colNo);
+      }
+    }
+
+    type = intType;
+    break;
   case SB_PLUS:
     eat(SB_PLUS);
     type = compileExpression2();
@@ -683,6 +735,20 @@ Type *compileExpression(void)
     type = compileExpression2();
   }
   return type;
+}
+
+void compileExpressionList(Type *expressionTypes[], int *expressionCount)
+{
+  Type *type;
+
+  type = compileExpression();
+  expressionTypes[(*expressionCount)++] = type;
+
+  while (lookAhead->tokenType == SB_COMMA) {
+    eat(SB_COMMA);
+    type = compileExpression();
+    expressionTypes[(*expressionCount)++] = type;
+  }
 }
 
 Type *compileExpression2(void)
